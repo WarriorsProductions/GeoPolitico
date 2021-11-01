@@ -1,1 +1,1 @@
-# Geopolitico
+# GeoPolitico
