@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GEOPOLITICO - Advanced Political & Economic Simulation Game">
+    <title>GEOPOLITICO - Political & Economic Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Header Actions - Horizontal Rectangular Buttons */
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            z-index: 1;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .header-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .header-dropdown-btn {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 150px;
+            position: relative;
+        }
+
+        .header-dropdown:first-child .header-dropdown-btn {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .header-dropdown:last-child .header-dropdown-btn {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            border-right: none;
+        }
+
+        .header-dropdown-btn:hover {
+            background: rgba(192, 57, 43, 1);
+            transform: scaleX(1.1);
+            z-index: 10;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin-top: 0.5rem;
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+            z-index: 1001;
+            min-width: 200px;
+        }
+
+        .header-dropdown:hover .header-dropdown-content {
+            display: block;
+        }
+
+        .header-dropdown-content .btn {
+            width: 100%;
+            margin: 0;
+            border-radius: 0;
+            padding: 0.8rem 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .header-dropdown-content .btn:last-child {
+            border-bottom: none;
+        }
+
+        .header-dropdown-content .btn:hover {
+            transform: none;
+            background: #f8f9fa !important;
+            color: #2c3e50 !important;
+        }
+
+        /* Page System */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Profile Page Styles */
+        .profile-header {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(52, 73, 94, 0.8);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-button:hover {
+            background: rgba(44, 62, 80, 1);
+            transform: translateY(-2px);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .profile-stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .profile-stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-stat-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        /* Navigation Styles - HIDDEN */
+        .nav {
+            display: none;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .card h3 {
+            color: #34495e;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image::before {
+            content: '🌍';
+            font-size: 3rem;
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        /* Game Stats */
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            background: #ecf0f1;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: background 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: #d5dbdb;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Sidebar */
+        .sidebar .card {
+            margin-bottom: 1rem;
+        }
+
+        .trending-item {
+            padding: 0.8rem;
+            border-left: 3px solid #e74c3c;
+            margin-bottom: 0.8rem;
+            background: #ecf0f1;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .trending-item:hover {
+            background: #d5dbdb;
+            border-left-width: 5px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header-dropdown-btn {
+                border-radius: 8px !important;
+                border-right: none !important;
+                margin-bottom: 0.5rem;
+                min-width: 250px;
+            }
+
+            .header-dropdown-btn:hover {
+                transform: scale(1.02);
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .game-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .back-button {
+                position: static;
+                margin-bottom: 1rem;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .game-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page active">
+            <!-- Header -->
+            <header class="header">
+                <h1>GEOPOLITICO</h1>
+                <p>Advanced Political & Economic Simulation</p>
+                
+                <!-- Header Actions - Horizontal Rectangular Buttons -->
+                <div class="header-actions">
+                    <!-- Navigation Menu -->
+                    <div class="header-dropdown">
+                        <button class="header-dropdown-btn">
+                            🧭 MENU
+                        </button>
+                        <div class="header-dropdown-content">
+                            <button class="btn btn-secondary" onclick="navigateTo('home')">🏠 Home</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('leaders')">👑 Leaders</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('actions')">⚡ Actions</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('regions')">🌍 Regions</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('parties')">🏛️ Parties</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('messages')">💬 Messages</button>
+                            <button class="btn btn-secondary" onclick="navigateTo('worldmap')">🗺️ World Map</button>
+                            <button class="btn btn-primary" onclick="showProfile()">👤 Profile</button>
+                        </div>
+                    </div>
+
+                    <!-- Game Actions -->
+                    <div class="header-dropdown">
+                        <button class="header-dropdown-btn">
+                            🎮 GAME
+                        </button>
+                        <div class="header-dropdown-content">
+                            <button class="btn btn-primary" onclick="startGame()">🚀 Join Simulation</button>
+                            <button class="btn btn-secondary" onclick="viewTutorial()">📖 Tutorial</button>
+                            <button class="btn btn-primary" onclick="viewEvents()">📰 All Events</button>
+                            <button class="btn btn-secondary" onclick="showStats()">📊 Statistics</button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="header-dropdown">
+                        <button class="header-dropdown-btn">
+                            ⚡ ACTIONS
+                        </button>
+                        <div class="header-dropdown-content">
+                            <button class="btn btn-secondary" onclick="performAction('trade')">🤝 Trade</button>
+                            <button class="btn btn-secondary" onclick="performAction('diplomacy')">🏛️ Diplomacy</button>
+                            <button class="btn btn-secondary" onclick="performAction('military')">⚔️ Military</button>
+                            <button class="btn btn-secondary" onclick="performAction('economy')">💰 Economy</button>
+                            <button class="btn btn-secondary" onclick="performAction('research')">🔬 Research</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <ul>
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#">Leaders</a></li>
+                <li><a href="#">Actions</a></li>
+                <li class="dropdown">
+                    <a href="#">Regions ▼</a>
+                    <div class="dropdown-content">
+                        <a href="#">Singapore</a>
+                        <a href="#">United States</a>
+                        <a href="#">European Union</a>
+                        <a href="#">China</a>
+                    </div>
+                </li>
+                <li><a href="#">Parties</a></li>
+                <li><a href="#">Messages</a></li>
+                <li><a href="#">World Map</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="left-column">
+                <!-- Game Launch Card -->
+                <article class="card">
+                    <h2>🚀 Game Launch - Season 2025</h2>
+                    <div class="card-date">Live Now • Global Simulation Active</div>
+                    <div class="card-image">
+                        Global Political Arena
+                    </div>
+                    <p>Welcome to GEOPOLITICO's latest season! Navigate complex international relations, manage your nation's economy, and forge alliances in this immersive political simulation.</p>
+                    
+                    <div class="game-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">147</div>
+                            <div class="stat-label">Active Players</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Nations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">$2.4T</div>
+                            <div class="stat-label">Global GDP</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">89%</div>
+                            <div class="stat-label">Stability Index</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Recent Events Card -->
+                <article class="card">
+                    <h2>📰 Recent Global Events</h2>
+                    <div class="card-date">Last Updated: 2 hours ago</div>
+                    <div class="card-image">
+                        Breaking News & Updates
+                    </div>
+                    <p>Stay informed about the latest developments in our simulation world. From trade agreements to diplomatic tensions, every decision shapes the global landscape.</p>
+                    
+                    <div style="margin-top: 1rem;">
+                        <h4 style="color: #e74c3c; margin-bottom: 0.5rem;">Latest Headlines:</h4>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">🤝 Singapore-EU Trade Summit concludes successfully</li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">⚡ Energy crisis triggers emergency UN session</li>
+                            <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">📈 Global markets respond to new economic policies</li>
+                        </ul>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Quick Actions -->
+                <div class="card">
+                    <h3>⚡ Player Status</h3>
+                    <div style="text-align: center; margin: 1rem 0;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏛️</div>
+                        <div style="font-weight: bold; color: #2c3e50;">Republic of Players</div>
+                        <div style="color: #7f8c8d; font-size: 0.9rem;">Democratic Government</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">76%</div>
+                        <div class="stat-label">Approval Rating</div>
+                    </div>
+                </div>
+
+                <!-- Trending News -->
+                <div class="card">
+                    <h3>📈 Trending Topics</h3>
+                    <div class="trending-item">
+                        <strong>Climate Summit 2025</strong>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">Global environmental policies</div>
+                    </div>
+                    <div class="trending-item">
+                        <strong>Tech Innovation Race</strong>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">AI and quantum computing</div>
+                    </div>
+                    <div class="trending-item">
+                        <strong>Space Colonization</strong>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">Mars settlement project</div>
+                    </div>
+                </div>
+
+                <!-- Player Status -->
+                <div class="card">
+                    <h3>🌐 Connect & Follow</h3>
+                    <p style="margin-bottom: 1rem;">Join our community and stay updated with the latest simulation news.</p>
+                    <div class="action-buttons" style="flex-direction: column;">
+                        <button class="btn btn-primary" onclick="followGame()">Follow Updates</button>
+                        <button class="btn btn-secondary" onclick="joinDiscord()">Join Discord</button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <h3>GEOPOLITICO</h3>
+                <p>&copy; 2025 Political Simulation Platform. Experience the complexity of global governance.</p>
+            </footer>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="profile-page" class="page">
+            <div class="profile-header">
+                <button class="back-button" onclick="goBack()">
+                    ← Back to Game
+                </button>
+                <div class="profile-avatar">👤</div>
+                <h1>President Alexander Nova</h1>
+                <p>Republic of Players • Democratic Government</p>
+                <div style="margin-top: 1rem;">
+                    <span style="background: rgba(46, 204, 113, 0.2); color: #27ae60; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+                        🟢 Online • Active Leader
+                    </span>
+                </div>
+            </div>
+
+            <div style="padding: 2rem;">
+                <div class="profile-stats">
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">👑</div>
+                        <div class="profile-stat-value">76%</div>
+                        <div class="profile-stat-label">Approval Rating</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">🏛️</div>
+                        <div class="profile-stat-value">847</div>
+                        <div class="profile-stat-label">Days in Office</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">🤝</div>
+                        <div class="profile-stat-value">23</div>
+                        <div class="profile-stat-label">Trade Agreements</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">🌍</div>
+                        <div class="profile-stat-value">8</div>
+                        <div class="profile-stat-label">Allied Nations</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">💰</div>
+                        <div class="profile-stat-value">$2.4T</div>
+                        <div class="profile-stat-label">National GDP</div>
+                    </div>
+                    <div class="profile-stat-card">
+                        <div class="profile-stat-icon">⚔️</div>
+                        <div class="profile-stat-value">156K</div>
+                        <div class="profile-stat-label">Military Strength</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🏆 Recent Achievements</h2>
+                    <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 2rem;">🥇</div>
+                            <div>
+                                <strong>Climate Summit Success</strong>
+                                <div style="color: #7f8c8d; font-size: 0.9rem;">Led international climate negotiations</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 2rem;">📈</div>
+                            <div>
+                                <strong>Economic Growth</strong>
+                                <div style="color: #7f8c8d; font-size: 0.9rem;">Achieved 4.2% GDP growth this quarter</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                            <div style="font-size: 2rem;">🕊️</div>
+                            <div>
+                                <strong>Peace Mediator</strong>
+                                <div style="color: #7f8c8d; font-size: 0.9rem;">Successfully mediated regional conflict</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div class="card">
+                        <h3>📊 Policy Focus</h3>
+                        <div style="margin-top: 1rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Economy</span>
+                                    <span style="color: #e74c3c; font-weight: bold;">85%</span>
+                                </div>
+                                <div style="background: #ecf0f1; height: 8px; border-radius: 4px;">
+                                    <div style="background: #e74c3c; height: 100%; width: 85%; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Environment</span>
+                                    <span style="color: #27ae60; font-weight: bold;">72%</span>
+                                </div>
+                                <div style="background: #ecf0f1; height: 8px; border-radius: 4px;">
+                                    <div style="background: #27ae60; height: 100%; width: 72%; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Defense</span>
+                                    <span style="color: #f39c12; font-weight: bold;">64%</span>
+                                </div>
+                                <div style="background: #ecf0f1; height: 8px; border-radius: 4px;">
+                                    <div style="background: #f39c12; height: 100%; width: 64%; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🌐 Global Relations</h3>
+                        <div style="margin-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #ecf0f1;">
+                                <span>🇺🇸 United States</span>
+                                <span style="color: #27ae60; font-weight: bold;">Allied</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #ecf0f1;">
+                                <span>🇪🇺 European Union</span>
+                                <span style="color: #3498db; font-weight: bold;">Friendly</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #ecf0f1;">
+                                <span>🇨🇳 China</span>
+                                <span style="color: #f39c12; font-weight: bold;">Neutral</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0;">
+                                <span>🇷🇺 Russia</span>
+                                <span style="color: #e74c3c; font-weight: bold;">Tense</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showProfile() {
+            showPage('profile-page');
+        }
+
+        function goBack() {
+            showPage('home-page');
+        }
+
+        // Game functionality
+        function navigateTo(page) {
+            const pages = {
+                home: 'Home page - Main dashboard with current simulation status',
+                leaders: 'Leaders page - View world leaders and their approval ratings',
+                actions: 'Actions page - Comprehensive list of available political actions',
+                regions: 'Regions page - Detailed view of all nations and territories',
+                parties: 'Parties page - Political parties and their ideologies worldwide',
+                messages: 'Messages page - Diplomatic communications and announcements',
+                worldmap: 'World Map - Interactive global political map'
+            };
+            alert(`Navigating to: ${pages[page] || 'Unknown page'}`);
+        }
+
+        function startGame() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.innerHTML = '<span class="loading"></span> Loading...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                alert('Welcome to GEOPOLITICO! Tutorial will begin shortly.');
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        function viewTutorial() {
+            alert('Tutorial: Learn the basics of political simulation, economic management, and diplomatic relations.');
+        }
+
+        function viewEvents() {
+            alert('Global Events Dashboard - Monitor real-time political and economic developments.');
+        }
+
+        function performAction(action) {
+            const actions = {
+                trade: 'Trade negotiations initiated. Your economic advisors are preparing proposals.',
+                diplomacy: 'Diplomatic mission launched. Your ambassador is en route.',
+                military: 'Military command center activated. Strategic options available.',
+                economy: 'Economic policy review initiated. Finance ministers are consulting.',
+                research: 'Research funding allocated. Science advisors are prioritizing projects.'
+            };
+            alert(actions[action] || 'Action executed successfully.');
+        }
+
+        function showStats() {
+            alert('Statistics Dashboard - Comprehensive analysis of your nation\'s performance and global rankings.');
+        }
+
+        function followGame() {
+            alert('Thank you for following GEOPOLITICO! You\'ll receive updates on major simulation events.');
+        }
+
+        function joinDiscord() {
+            alert('Discord community link would open here. Connect with other political strategists!');
+        }
+
+        // Navigation highlighting
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href') === '#') {
+                    e.preventDefault();
+                }
+                document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Dynamic stats update
+        function updateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            stats.forEach(stat => {
+                const value = parseInt(stat.textContent);
+                const variation = Math.floor(Math.random() * 5) - 2;
+                if (stat.textContent.includes('$')) {
+                    // Handle monetary values
+                    const newValue = Math.max(0, value + variation * 0.1);
+                    stat.textContent = '$' + newValue.toFixed(1) + 'T';
+                } else if (stat.textContent.includes('%')) {
+                    // Handle percentages
+                    const newValue = Math.max(0, Math.min(100, value + variation));
+                    stat.textContent = newValue + '%';
+                } else {
+                    // Handle regular numbers
+                    const newValue = Math.max(0, value + variation);
+                    stat.textContent = newValue;
+                }
+            });
+        }
+
+        // Update stats every 30 seconds for dynamic feel
+        setInterval(updateStats, 30000);
+
+        // Add some interactive hover effects
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
